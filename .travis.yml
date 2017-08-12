@@ -1,0 +1,60 @@
+sudo: required
+dist: trusty
+
+os: linux
+
+language: c
+
+compiler:
+  - gcc
+
+branches:
+  only:
+    - antonio/travis-ci
+
+env:
+  global:
+    - JOBS=3
+    - PREFIX="${HOME}/opt"
+    - TAP_WINDOWS_VERSION=9.21.2
+    - LZO_VERSION=2.10
+    - PKCS11_HELPER_VERSION=1.22
+    - MBEDTLS_VERSION="2.5.3"
+    - MBEDTLS_CFLAGS="-I${PREFIX}/include"
+    - MBEDTLS_LIBS="-L${PREFIX}/lib -lmbedtls -lmbedx509 -lmbedcrypto"
+    - OPENSSL_VERSION="1.0.2l"
+    - OPENSSL_CFLAGS="-I${PREFIX}/include"
+    - OPENSSL_LIBS="-L${PREFIX}/lib -lssl -lcrypto"
+
+matrix:
+  include:
+    - env: SSLLIB="mbedtls"
+      os: linux
+      compiler: gcc
+  exclude:
+    - compiler: gcc
+
+addons:
+  apt:
+    packages:
+      - liblzo2-dev
+      - libpam0g-dev
+      - liblz4-dev
+      - linux-libc-dev
+      - libmbedtls-dev
+      - man2html
+
+cache:
+  ccache: true
+  directories:
+  - download-cache
+  - ${HOME}/opt
+
+before_install:
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew update     ; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install lzo; fi
+
+install: true
+
+script:
+  - .travis/build-check.sh
